@@ -84,8 +84,16 @@ def style_df(row):
 
 st.subheader("Memória de Cálculo")
 df_view = df.copy()
+
+# 1. Aplicamos a formatação de moeda
 df_view['Valor'] = df_view['Valor'].apply(formatar_br)
-st.table(df_view[['Descrição', 'Valor']].style.apply(style_df, axis=1))
+
+# 2. O SEGREDO: Aplicamos o estilo no dataframe completo (com a coluna 'Cor')
+# e só depois usamos o '.hide' para não mostrar a coluna 'Cor' na tela.
+st.table(
+    df_view.style.apply(style_df, axis=1)
+    .hide(axis='columns', subset=['Cor'])
+)
 
 # --- GRÁFICO ---
 fig, ax = plt.subplots(figsize=(10, 4))
