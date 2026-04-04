@@ -105,7 +105,7 @@ if api_configurada:
         with st.spinner("Analisando saúde fiscal do cliente..."):
             try:
                 # O modelo atualizado e rápido
-                modelo = genai.GenerativeModel('gemini-1.5-flash')
+                modelo = genai.GenerativeModel('gemini-pro')
                 
                 prompt = f"""
                 Aja como um contador experiente e cordial escrevendo para seu cliente.
