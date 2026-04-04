@@ -30,6 +30,17 @@ except Exception:
 if 'texto_ia' not in st.session_state:
     st.session_state.texto_ia = ""
 
+# --- FUNÇÃO DE CONVERSÃO DE MOEDA ---
+def tratar_moeda(valor_digitado):
+    if not valor_digitado:
+        return 0.0
+    # Remove R$, espaços e o ponto de milhar. Troca a vírgula por ponto para o Python calcular.
+    texto_limpo = str(valor_digitado).replace('R$', '').replace(' ', '').replace('.', '').replace(',', '.')
+    try:
+        return float(texto_limpo)
+    except ValueError:
+        return 0.0
+
 # --- BARRA LATERAL ---
 with st.sidebar:
     st.header("👤 Dados do Cliente")
@@ -38,18 +49,28 @@ with st.sidebar:
     
     st.divider()
     st.header("📅 Evolução Patrimonial")
-    bens_inicial = st.number_input("Bens e Direitos (Jan/01)", value=0.0, step=1000.0)
-    bens_final = st.number_input("Bens e Direitos (Dez/31)", value=0.0, step=1000.0)
-    dividas_inicial = st.number_input("Dívidas e Ônus (Jan/01)", value=0.0, step=1000.0)
-    dividas_final = st.number_input("Dívidas e Ônus (Dez/31)", value=0.0, step=1000.0)
+    st.caption("Pode digitar usando pontos e vírgulas (Ex: 1.500,50)")
+    
+    bens_inicial_str = st.text_input("Bens e Direitos (Jan/01)", value="0,00")
+    bens_final_str = st.text_input("Bens e Direitos (Dez/31)", value="0,00")
+    dividas_inicial_str = st.text_input("Dívidas e Ônus (Jan/01)", value="0,00")
+    dividas_final_str = st.text_input("Dívidas e Ônus (Dez/31)", value="0,00")
     
     st.divider()
     st.header("💸 Fluxo de Caixa")
-    receitas_trib = st.number_input("Rendimentos Tributáveis", value=0.0, step=500.0)
-    receitas_isent = st.number_input("Rendimentos Isentos", value=0.0, step=500.0)
-    deducoes = st.number_input("Deduções/Despesas Pagas", value=0.0, step=500.0)
+    receitas_trib_str = st.text_input("Rendimentos Tributáveis", value="0,00")
+    receitas_isent_str = st.text_input("Rendimentos Isentos", value="0,00")
+    deducoes_str = st.text_input("Deduções/Despesas Pagas", value="0,00")
 
-# --- CÁLCULOS MATEMÁTICOS ---
+# --- CONVERSÃO E CÁLCULOS MATEMÁTICOS ---
+bens_inicial = tratar_moeda(bens_inicial_str)
+bens_final = tratar_moeda(bens_final_str)
+dividas_inicial = tratar_moeda(dividas_inicial_str)
+dividas_final = tratar_moeda(dividas_final_str)
+receitas_trib = tratar_moeda(receitas_trib_str)
+receitas_isent = tratar_moeda(receitas_isent_str)
+deducoes = tratar_moeda(deducoes_str)
+
 pl_inicial = bens_inicial - dividas_inicial
 pl_final = bens_final - dividas_final
 variacao_patrimonial = pl_final - pl_inicial
