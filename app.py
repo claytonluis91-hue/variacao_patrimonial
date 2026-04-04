@@ -107,7 +107,7 @@ if api_configurada:
     if st.button("Gerar Parecer Inteligente"):
         with st.spinner("Analisando saúde fiscal do cliente..."):
             try:
-                modelo = genai.GenerativeModel('gemini-1.5-flash-latest')
+                modelo = genai.GenerativeModel('gemini-1.5-flash')
                 prompt = f"""
                 Aja como um contador experiente e cordial escrevendo para seu cliente.
                 Analise os dados financeiros anuais deste cliente:
