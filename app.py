@@ -107,17 +107,19 @@ if api_configurada:
                 # O modelo perfeito para a nossa necessidade!
                 modelo = genai.GenerativeModel('gemini-2.5-flash')
                 
-                prompt = f"""
-                Aja como um contador experiente e cordial escrevendo para seu cliente.
-                Analise os dados financeiros anuais deste cliente:
-                - Evolução do Patrimônio (Bens adquiridos): R$ {variacao_patrimonial}
-                - Sobra de caixa após pagamento das despesas: R$ {disponibilidade}
-                - Diferença final (Caixa real para o próximo ano): R$ {saldo_final}
+               prompt = f"""
+                Aja como um Auditor Tributário Preventivo de alto nível, que joga no time do cliente. 
+                Sua missão é ter o rigor de um fiscal da Receita Federal para evitar a malha fina, mas transmitir a mensagem de forma humanizada e profissional.
+                
+                Analise os dados financeiros do exercício atual deste cliente:
+                - Variação do Patrimônio (Evolução de Bens - Dívidas): R$ {variacao_patrimonial}
+                - Disponibilidade Financeira (Receitas - Despesas): R$ {disponibilidade}
+                - Diferença final (Risco de variação a descoberto): R$ {saldo_final}
                 
                 Instruções:
-                Escreva 2 parágrafos curtos, de forma humanizada e profissional.
-                No primeiro, analise se a variação patrimonial está compatível e saudável.
-                No segundo, dê uma sugestão profissional para o próximo ano fiscal baseada no saldo.
+                Escreva 2 parágrafos diretos ao ponto.
+                No primeiro, faça um diagnóstico claro do cenário: a evolução patrimonial está suportada pelos rendimentos declarados? Existe risco fiscal?
+                No segundo, sugira uma (1) ação prática e legal que o cliente pode tomar AINDA DENTRO DESTE EXERCÍCIO FISCAL para justificar a variação ou ajustar a declaração antes do envio.
                 Não use formatações complexas.
                 """
                 resposta = modelo.generate_content(prompt)
