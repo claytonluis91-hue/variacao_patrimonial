@@ -109,7 +109,7 @@ if api_configurada:
                 
                 prompt = f"""
                 Aja como um Auditor Tributário Preventivo de alto nível, que joga no time do cliente. 
-                Sua missão é ter o rigor de um fiscal da Receita Federal para evitar a malha fina, mas transmitir a mensagem de forma humanizada e profissional.
+                Sua missão é ter o rigor de um fiscal da Receita Federal para identificar riscos, mas transmitir a mensagem de forma humanizada, profissional e extremamente simplificada.
                 
                 Analise os dados financeiros do exercício atual deste cliente:
                 - Variação do Patrimônio (Evolução de Bens - Dívidas): R$ {variacao_patrimonial}
@@ -117,10 +117,10 @@ if api_configurada:
                 - Diferença final (Risco de variação a descoberto): R$ {saldo_final}
                 
                 Instruções:
-                Escreva 2 parágrafos diretos ao ponto.
-                No primeiro, faça um diagnóstico claro do cenário: a evolução patrimonial está suportada pelos rendimentos declarados? Existe risco fiscal?
-                No segundo, sugira uma (1) ação prática e legal que o cliente pode tomar AINDA DENTRO DESTE EXERCÍCIO FISCAL para justificar a variação ou ajustar a declaração antes do envio.
-                Não use formatações complexas.
+                Escreva 2 parágrafos curtos e diretos ao ponto.
+                No primeiro, faça um diagnóstico claro: a evolução patrimonial faz sentido com o dinheiro que entrou? Existe algum risco de malha fina?
+                No segundo, sugira uma (1) ação prática e legal que o cliente pode tomar AINDA NESTE ANO para ajustar a declaração ou justificar a diferença.
+                Regra de Ouro: Evite jargões contábeis complexos (o famoso "economês"). Traduza o cenário para uma linguagem didática e de fácil compreensão para quem não entende nada de contabilidade.
                 """
                 
                 resposta = modelo.generate_content(prompt)
@@ -130,7 +130,7 @@ if api_configurada:
 
 if st.session_state.texto_ia:
     st.info(st.session_state.texto_ia)
-
+    
 # --- GRÁFICO E EXPORTAÇÃO ---
 fig, ax = plt.subplots(figsize=(10, 4))
 ax.barh(['Disponibilidade', 'Variação Patrimonial'], [disponibilidade, variacao_patrimonial], color=['#1e88e5', '#e53935'])
