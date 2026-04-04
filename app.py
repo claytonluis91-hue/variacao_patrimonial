@@ -23,7 +23,7 @@ st.subheader("Análise de Conformidade IRPF com Inteligência Artificial")
 
 # Configuração da API do Gemini (buscando do Streamlit Secrets)
 try:
-    genai.configure(api_key=st.secrets["AIzaSyBmO28ZRYDoLarR9mo7hAeM41qdbwAHNM4"])
+    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
     api_configurada = True
 except Exception:
     api_configurada = False
