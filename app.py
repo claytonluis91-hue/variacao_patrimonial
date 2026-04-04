@@ -24,6 +24,16 @@ st.subheader("Análise de Conformidade IRPF com Inteligência Artificial")
 # Configuração da API do Gemini (buscando do Streamlit Secrets)
 try:
     genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+    st.divider()
+st.subheader("🔍 Diagnóstico de Modelos da API")
+try:
+    st.write("Modelos disponíveis para a sua chave que geram texto:")
+    for m in genai.list_models():
+        if 'generateContent' in m.supported_generation_methods:
+            st.code(m.name) # Isso vai imprimir o nome exato na tela
+except Exception as e:
+    st.error(f"Erro ao buscar lista: {e}")
+st.divider()
     api_configurada = True
 except Exception:
     api_configurada = False
