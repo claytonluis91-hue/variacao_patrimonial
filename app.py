@@ -98,21 +98,35 @@ st.table(df_view.style.apply(style_df, axis=1).hide(axis='columns', subset=['Cor
 
 # --- ANÁLISE COM INTELIGÊNCIA ARTIFICIAL ---
 st.divider()
-st.subheader("🤖 Consultoria IA - Diagnóstico")
+st.subheader("🤖 Consultoria IA")
 
 if api_configurada:
-    st.write("Verificando modelos disponíveis para a sua nova chave...")
-    try:
-        modelos_encontrados = False
-        for m in genai.list_models():
-            if 'generateContent' in m.supported_generation_methods:
-                st.code(m.name.replace('models/', ''))
-                modelos_encontrados = True
-        
-        if not modelos_encontrados:
-            st.warning("Nenhum modelo de texto encontrado.")
-    except Exception as e:
-        st.error(f"Erro ao buscar lista: {e}")
+    if st.button("Gerar Parecer Inteligente"):
+        with st.spinner("Analisando saúde fiscal do cliente..."):
+            try:
+                # O modelo perfeito para a nossa necessidade!
+                modelo = genai.GenerativeModel('gemini-2.5-flash')
+                
+                prompt = f"""
+                Aja como um contador experiente e cordial escrevendo para seu cliente.
+                Analise os dados financeiros anuais deste cliente:
+                - Evolução do Patrimônio (Bens adquiridos): R$ {variacao_patrimonial}
+                - Sobra de caixa após pagamento das despesas: R$ {disponibilidade}
+                - Diferença final (Caixa real para o próximo ano): R$ {saldo_final}
+                
+                Instruções:
+                Escreva 2 parágrafos curtos, de forma humanizada e profissional.
+                No primeiro, analise se a variação patrimonial está compatível e saudável.
+                No segundo, dê uma sugestão profissional para o próximo ano fiscal baseada no saldo.
+                Não use formatações complexas.
+                """
+                resposta = modelo.generate_content(prompt)
+                st.session_state.texto_ia = resposta.text
+            except Exception as e:
+                st.error(f"Erro ao gerar análise: {e}")
+
+if st.session_state.texto_ia:
+    st.info(st.session_state.texto_ia)
 
 # --- GRÁFICO E EXPORTAÇÃO ---
 fig, ax = plt.subplots(figsize=(10, 4))
