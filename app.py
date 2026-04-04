@@ -104,10 +104,10 @@ if api_configurada:
     if st.button("Gerar Parecer Inteligente"):
         with st.spinner("Analisando saúde fiscal do cliente..."):
             try:
-                # O modelo perfeito para a nossa necessidade!
+                # O modelo atualizado e rápido
                 modelo = genai.GenerativeModel('gemini-2.5-flash')
                 
-               prompt = f"""
+                prompt = f"""
                 Aja como um Auditor Tributário Preventivo de alto nível, que joga no time do cliente. 
                 Sua missão é ter o rigor de um fiscal da Receita Federal para evitar a malha fina, mas transmitir a mensagem de forma humanizada e profissional.
                 
@@ -122,6 +122,7 @@ if api_configurada:
                 No segundo, sugira uma (1) ação prática e legal que o cliente pode tomar AINDA DENTRO DESTE EXERCÍCIO FISCAL para justificar a variação ou ajustar a declaração antes do envio.
                 Não use formatações complexas.
                 """
+                
                 resposta = modelo.generate_content(prompt)
                 st.session_state.texto_ia = resposta.text
             except Exception as e:
