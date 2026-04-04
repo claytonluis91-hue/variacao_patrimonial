@@ -7,10 +7,8 @@ import os
 import tempfile
 import google.generativeai as genai
 
-# Configuração da página
 st.set_page_config(page_title="Variação Patrimonial IA", layout="wide")
 
-# Estilo CSS
 st.markdown("""
     <style>
     .main { background-color: #f8f9fa; }
@@ -21,7 +19,7 @@ st.markdown("""
 st.title("⚖️ Laudo de Variação Patrimonial Inteligente")
 st.subheader("Análise de Conformidade IRPF com Inteligência Artificial")
 
-# Configuração da API do Gemini (buscando do Streamlit Secrets)
+# Configuração Segura da API
 try:
     genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
     api_configurada = True
@@ -29,29 +27,6 @@ except Exception:
     api_configurada = False
     st.warning("⚠️ Chave de API não encontrada nos Secrets. A análise com IA está desativada.")
 
-# ==========================================
-# BLOCO DE DIAGNÓSTICO DE MODELOS
-# ==========================================
-if api_configurada:
-    st.success("✅ Chave de API conectada com sucesso!")
-    with st.expander("🔍 DIAGNÓSTICO: Ver modelos disponíveis (Clique para abrir)", expanded=True):
-        st.write("Estes são os modelos que a sua chave tem permissão para usar. Escolha um e atualize a linha 112 do código:")
-        try:
-            modelos_encontrados = False
-            for m in genai.list_models():
-                if 'generateContent' in m.supported_generation_methods:
-                    # Tira a palavra 'models/' para facilitar a cópia
-                    nome_limpo = m.name.replace('models/', '')
-                    st.code(nome_limpo)
-                    modelos_encontrados = True
-            
-            if not modelos_encontrados:
-                st.warning("Nenhum modelo de geração de texto encontrado para esta chave.")
-        except Exception as e:
-            st.error(f"Erro ao buscar lista de modelos: {e}")
-# ==========================================
-
-# Variável de estado para guardar o texto da IA
 if 'texto_ia' not in st.session_state:
     st.session_state.texto_ia = ""
 
@@ -84,7 +59,7 @@ disponibilidade = total_receitas - deducoes
 saldo_final = disponibilidade - variacao_patrimonial
 sugestao_proximo_ano = max(0.0, saldo_final)
 
-# --- DASHBOARD DE RESUMO ---
+# --- DASHBOARD ---
 col1, col2, col3 = st.columns(3)
 col1.metric("Variação Patrimonial", f"R$ {variacao_patrimonial:,.2f}")
 col2.metric("Disponibilidade Financeira", f"R$ {disponibilidade:,.2f}")
@@ -93,7 +68,7 @@ if saldo_final >= 0:
 else:
     col3.metric("Saldo de Caixa", f"R$ {saldo_final:,.2f}", delta=f"R$ {abs(saldo_final):,.2f}", delta_color="inverse")
 
-# --- TABELA FORMATADA ---
+# --- TABELA ---
 def formatar_br(valor):
     return f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
@@ -121,7 +96,7 @@ df_view = df.copy()
 df_view['Valor'] = df_view['Valor'].apply(formatar_br)
 st.table(df_view.style.apply(style_df, axis=1).hide(axis='columns', subset=['Cor']))
 
-# --- ANÁLISE COM INTELIGÊNCIA ARTIFICIAL ---
+# --- IA ---
 st.divider()
 st.subheader("🤖 Consultoria IA")
 
@@ -129,8 +104,8 @@ if api_configurada:
     if st.button("Gerar Parecer Inteligente"):
         with st.spinner("Analisando saúde fiscal do cliente..."):
             try:
-                # ATENÇÃO: É AQUI QUE VOCÊ VAI COLOCAR O NOME DO MODELO QUE APARECER NO DIAGNÓSTICO
-                modelo = genai.GenerativeModel('gemini-pro')
+                # O modelo atualizado e rápido
+                modelo = genai.GenerativeModel('gemini-1.5-flash')
                 
                 prompt = f"""
                 Aja como um contador experiente e cordial escrevendo para seu cliente.
@@ -153,30 +128,26 @@ if api_configurada:
 if st.session_state.texto_ia:
     st.info(st.session_state.texto_ia)
 
-# --- GRÁFICO ---
+# --- GRÁFICO E EXPORTAÇÃO ---
 fig, ax = plt.subplots(figsize=(10, 4))
 ax.barh(['Disponibilidade', 'Variação Patrimonial'], [disponibilidade, variacao_patrimonial], color=['#1e88e5', '#e53935'])
 ax.set_title("Capacidade de Cobertura Patrimonial")
 plt.tight_layout()
 
-# --- EXPORTAÇÃO ---
 def gerar_pdf(nome, cpf, df_data, figura, parecer_ia):
     pdf = FPDF()
     pdf.add_page()
     
-    # Cabeçalho
     pdf.set_font("Arial", 'B', 16)
     pdf.cell(200, 10, txt="LAUDO DE VARIAÇÃO PATRIMONIAL", ln=True, align='C')
     pdf.ln(5)
     
-    # Identificação
     pdf.set_font("Arial", 'B', 10)
     pdf.cell(100, 8, f"CLIENTE: {nome.upper() if nome else 'NÃO INFORMADO'}")
     pdf.cell(100, 8, f"CPF: {cpf if cpf else 'NÃO INFORMADO'}", ln=True)
     pdf.line(10, 32, 200, 32)
     pdf.ln(5)
     
-    # Tabela
     pdf.set_fill_color(240, 240, 240)
     pdf.set_font("Arial", 'B', 10)
     pdf.cell(130, 8, "DESCRIÇÃO", border=1, fill=True)
@@ -190,14 +161,12 @@ def gerar_pdf(nome, cpf, df_data, figura, parecer_ia):
         pdf.cell(130, 8, row['Descrição'], border=1)
         pdf.cell(60, 8, formatar_br(row['Valor']), border=1, ln=True, align='R')
     
-    # Gráfico
     pdf.ln(5)
     with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmpfile:
         figura.savefig(tmpfile.name, format='png', dpi=300)
         pdf.image(tmpfile.name, x=40, w=130)
     os.unlink(tmpfile.name)
     
-    # Parecer IA no PDF
     if parecer_ia:
         pdf.ln(5)
         pdf.set_font("Arial", 'B', 12)
