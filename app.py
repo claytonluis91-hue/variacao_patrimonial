@@ -24,20 +24,32 @@ st.subheader("Análise de Conformidade IRPF com Inteligência Artificial")
 # Configuração da API do Gemini (buscando do Streamlit Secrets)
 try:
     genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-    st.divider()
-st.subheader("🔍 Diagnóstico de Modelos da API")
-try:
-    st.write("Modelos disponíveis para a sua chave que geram texto:")
-    for m in genai.list_models():
-        if 'generateContent' in m.supported_generation_methods:
-            st.code(m.name) # Isso vai imprimir o nome exato na tela
-except Exception as e:
-    st.error(f"Erro ao buscar lista: {e}")
-st.divider()
     api_configurada = True
 except Exception:
     api_configurada = False
     st.warning("⚠️ Chave de API não encontrada nos Secrets. A análise com IA está desativada.")
+
+# ==========================================
+# BLOCO DE DIAGNÓSTICO DE MODELOS
+# ==========================================
+if api_configurada:
+    st.success("✅ Chave de API conectada com sucesso!")
+    with st.expander("🔍 DIAGNÓSTICO: Ver modelos disponíveis (Clique para abrir)", expanded=True):
+        st.write("Estes são os modelos que a sua chave tem permissão para usar. Escolha um e atualize a linha 112 do código:")
+        try:
+            modelos_encontrados = False
+            for m in genai.list_models():
+                if 'generateContent' in m.supported_generation_methods:
+                    # Tira a palavra 'models/' para facilitar a cópia
+                    nome_limpo = m.name.replace('models/', '')
+                    st.code(nome_limpo)
+                    modelos_encontrados = True
+            
+            if not modelos_encontrados:
+                st.warning("Nenhum modelo de geração de texto encontrado para esta chave.")
+        except Exception as e:
+            st.error(f"Erro ao buscar lista de modelos: {e}")
+# ==========================================
 
 # Variável de estado para guardar o texto da IA
 if 'texto_ia' not in st.session_state:
@@ -117,7 +129,9 @@ if api_configurada:
     if st.button("Gerar Parecer Inteligente"):
         with st.spinner("Analisando saúde fiscal do cliente..."):
             try:
+                # ATENÇÃO: É AQUI QUE VOCÊ VAI COLOCAR O NOME DO MODELO QUE APARECER NO DIAGNÓSTICO
                 modelo = genai.GenerativeModel('gemini-pro')
+                
                 prompt = f"""
                 Aja como um contador experiente e cordial escrevendo para seu cliente.
                 Analise os dados financeiros anuais deste cliente:
@@ -188,9 +202,8 @@ def gerar_pdf(nome, cpf, df_data, figura, parecer_ia):
         pdf.ln(5)
         pdf.set_font("Arial", 'B', 12)
         pdf.set_text_color(0, 0, 0)
-        pdf.cell(200, 8, txt="Parecer Técnico e Sugestão Profissional:", ln=True)
+        pdf.cell(200, 8, txt="Parecer Tecnico e Sugestao Profissional:", ln=True)
         pdf.set_font("Arial", size=10)
-        # multi_cell permite que o texto quebre linhas automaticamente
         pdf.multi_cell(0, 6, txt=parecer_ia.encode('latin-1', 'replace').decode('latin-1'))
 
     return pdf.output(dest='S').encode('latin-1')
