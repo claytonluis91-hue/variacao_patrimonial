@@ -25,47 +25,47 @@ O grande diferencial deste projeto é a integração com a Inteligência Artific
 ## ⚙️ Como executar o projeto localmente
 
 1. Clone este repositório para a sua máquina:
+   
 bash
-git clone [https://github.com/SEU_USUARIO/NOME_DO_REPOSITORIO.git](https://github.com/SEU_USUARIO/NOME_DO_REPOSITORIO.git)
+
+`git clone [https://github.com/SEU_USUARIO/NOME_DO_REPOSITORIO.git](https://github.com/SEU_USUARIO/NOME_DO_REPOSITORIO.git)`
+
 
 2. Instale as dependências necessárias:
-Bash
-pip install -r requirements.txt
+   
+bash
+
+`pip install -r requirements.txt'`
 
 3. Configure a sua chave da API do Google Gemini:
 
-Crie uma pasta chamada .streamlit na raiz do projeto.
+* Crie uma pasta chamada .streamlit na raiz do projeto.
 
-Dentro dela, crie um arquivo chamado secrets.toml.
+* Dentro dela, crie um arquivo chamado secrets.toml.
 
-Insira a sua chave no seguinte formato:
+* Insira a sua chave no seguinte formato:
 
 Ini, TOML
-GEMINI_API_KEY = "SUA_CHAVE_AQUI"
-Atenção: Certifique-se de que a pasta .streamlit/ esteja incluída no seu arquivo .gitignore para não expor sua chave de API publicamente no GitHub!
+
+`GEMINI_API_KEY = "SUA_CHAVE_AQUI"`
+
+**Atenção:** Certifique-se de que a pasta .streamlit/ esteja incluída no seu arquivo .gitignore para não expor sua chave de API publicamente no GitHub!
 
 4. Execute o aplicativo:
 
 Bash
-streamlit run app.py
+`streamlit run app.py`
 
-☁️ Deploy no Streamlit Cloud
-Para hospedar o projeto gratuitamente no Streamlit Cloud:
 
-Conecte sua conta do GitHub ao Streamlit Community Cloud.
+## ☁️ Deploy no Streamlit Cloud
 
-Selecione o repositório e o arquivo principal (app.py).
+
+1. Para hospedar o projeto gratuitamente no Streamlit Cloud:
+
+2. Conecte sua conta do GitHub ao Streamlit Community Cloud.
+
+3. Selecione o repositório e o arquivo principal (app.py).
 
 Antes de fazer o deploy, vá em Advanced Settings > Secrets e cole a sua chave da API no mesmo formato utilizado localmente.
 
 Projeto desenvolvido para otimizar o planejamento tributário preventivo e agregar valor à consultoria fiscal.
-
-
-***
-
-Para criar ou editar esse arquivo no seu GitHub:
-1. Vá na página principal do seu repositório.
-2. Clique no botão **"Add file"** e depois em **"Create new file"**.
-3. Digite `README.md` no nome do arquivo.
-4. Cole o texto acima, altere os links (`SEU_USUARIO` e `NOME_DO_REPOSITORIO`) para os seus dados reais.
-5. Clique em **Commit changes**.
