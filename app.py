@@ -5,11 +5,12 @@ import matplotlib.pyplot as plt
 import io
 import os
 import tempfile
+import google.generativeai as genai
 
 # Configuração da página
-st.set_page_config(page_title="Variação Patrimonial", layout="wide")
+st.set_page_config(page_title="Variação Patrimonial IA", layout="wide")
 
-# Estilo CSS para melhorar a aparência
+# Estilo CSS
 st.markdown("""
     <style>
     .main { background-color: #f8f9fa; }
@@ -17,8 +18,20 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-st.title("⚖️ Laudo de Variação Patrimonial")
-st.subheader("Análise de Conformidade IRPF")
+st.title("⚖️ Laudo de Variação Patrimonial Inteligente")
+st.subheader("Análise de Conformidade IRPF com Inteligência Artificial")
+
+# Configuração da API do Gemini (buscando do Streamlit Secrets)
+try:
+    genai.configure(api_key=st.secrets["AIzaSyBmO28ZRYDoLarR9mo7hAeM41qdbwAHNM4"])
+    api_configurada = True
+except Exception:
+    api_configurada = False
+    st.warning("⚠️ Chave de API não encontrada nos Secrets. A análise com IA está desativada.")
+
+# Variável de estado para guardar o texto da IA
+if 'texto_ia' not in st.session_state:
+    st.session_state.texto_ia = ""
 
 # --- BARRA LATERAL ---
 with st.sidebar:
@@ -40,7 +53,6 @@ with st.sidebar:
     deducoes = st.number_input("Deduções/Despesas Pagas", value=0.0, step=500.0)
 
 # --- CÁLCULOS MATEMÁTICOS ---
-# Variação Patrimonial: $$ \Delta P = (Bens_{final} - Dividas_{final}) - (Bens_{inicial} - Dividas_{inicial}) $$
 pl_inicial = bens_inicial - dividas_inicial
 pl_final = bens_final - dividas_final
 variacao_patrimonial = pl_final - pl_inicial
@@ -84,27 +96,47 @@ def style_df(row):
 
 st.subheader("Memória de Cálculo")
 df_view = df.copy()
-
-# 1. Aplicamos a formatação de moeda
 df_view['Valor'] = df_view['Valor'].apply(formatar_br)
+st.table(df_view.style.apply(style_df, axis=1).hide(axis='columns', subset=['Cor']))
 
-# 2. O SEGREDO: Aplicamos o estilo no dataframe completo (com a coluna 'Cor')
-# e só depois usamos o '.hide' para não mostrar a coluna 'Cor' na tela.
-st.table(
-    df_view.style.apply(style_df, axis=1)
-    .hide(axis='columns', subset=['Cor'])
-)
+# --- ANÁLISE COM INTELIGÊNCIA ARTIFICIAL ---
+st.divider()
+st.subheader("🤖 Consultoria IA")
+
+if api_configurada:
+    if st.button("Gerar Parecer Inteligente"):
+        with st.spinner("Analisando saúde fiscal do cliente..."):
+            try:
+                modelo = genai.GenerativeModel('gemini-1.5-flash')
+                prompt = f"""
+                Aja como um contador experiente e cordial escrevendo para seu cliente.
+                Analise os dados financeiros anuais deste cliente:
+                - Evolução do Patrimônio (Bens adquiridos): R$ {variacao_patrimonial}
+                - Sobra de caixa após pagamento das despesas: R$ {disponibilidade}
+                - Diferença final (Caixa real para o próximo ano): R$ {saldo_final}
+                
+                Instruções:
+                Escreva 2 parágrafos curtos, de forma humanizada e profissional.
+                No primeiro, analise se a variação patrimonial está compatível e saudável.
+                No segundo, dê uma sugestão profissional para o próximo ano fiscal baseada no saldo.
+                Não use formatações complexas.
+                """
+                resposta = modelo.generate_content(prompt)
+                st.session_state.texto_ia = resposta.text
+            except Exception as e:
+                st.error(f"Erro ao gerar análise: {e}")
+
+if st.session_state.texto_ia:
+    st.info(st.session_state.texto_ia)
 
 # --- GRÁFICO ---
 fig, ax = plt.subplots(figsize=(10, 4))
 ax.barh(['Disponibilidade', 'Variação Patrimonial'], [disponibilidade, variacao_patrimonial], color=['#1e88e5', '#e53935'])
 ax.set_title("Capacidade de Cobertura Patrimonial")
 plt.tight_layout()
-st.pyplot(fig)
 
 # --- EXPORTAÇÃO ---
-
-def gerar_pdf(nome, cpf, df_data, figura):
+def gerar_pdf(nome, cpf, df_data, figura, parecer_ia):
     pdf = FPDF()
     pdf.add_page()
     
@@ -118,31 +150,39 @@ def gerar_pdf(nome, cpf, df_data, figura):
     pdf.cell(100, 8, f"CLIENTE: {nome.upper() if nome else 'NÃO INFORMADO'}")
     pdf.cell(100, 8, f"CPF: {cpf if cpf else 'NÃO INFORMADO'}", ln=True)
     pdf.line(10, 32, 200, 32)
-    pdf.ln(10)
+    pdf.ln(5)
     
     # Tabela
     pdf.set_fill_color(240, 240, 240)
     pdf.set_font("Arial", 'B', 10)
-    pdf.cell(130, 10, "DESCRIÇÃO", border=1, fill=True)
-    pdf.cell(60, 10, "VALOR", border=1, fill=True, ln=True, align='C')
+    pdf.cell(130, 8, "DESCRIÇÃO", border=1, fill=True)
+    pdf.cell(60, 8, "VALOR", border=1, fill=True, ln=True, align='C')
     
     pdf.set_font("Arial", size=10)
     for _, row in df_data.iterrows():
-        # Cores no PDF
         if row['Cor'] == 'Azul': pdf.set_text_color(0, 0, 255)
         elif row['Cor'] == 'Vermelho': pdf.set_text_color(255, 0, 0)
         else: pdf.set_text_color(0, 0, 0)
-        
         pdf.cell(130, 8, row['Descrição'], border=1)
         pdf.cell(60, 8, formatar_br(row['Valor']), border=1, ln=True, align='R')
     
-    # Gráfico (Resolvendo o erro do AttributeError)
-    pdf.ln(10)
+    # Gráfico
+    pdf.ln(5)
     with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmpfile:
         figura.savefig(tmpfile.name, format='png', dpi=300)
         pdf.image(tmpfile.name, x=40, w=130)
-    os.unlink(tmpfile.name) # Limpa o arquivo temporário
+    os.unlink(tmpfile.name)
     
+    # Parecer IA no PDF
+    if parecer_ia:
+        pdf.ln(5)
+        pdf.set_font("Arial", 'B', 12)
+        pdf.set_text_color(0, 0, 0)
+        pdf.cell(200, 8, txt="Parecer Técnico e Sugestão Profissional:", ln=True)
+        pdf.set_font("Arial", size=10)
+        # multi_cell permite que o texto quebre linhas automaticamente
+        pdf.multi_cell(0, 6, txt=parecer_ia.encode('latin-1', 'replace').decode('latin-1'))
+
     return pdf.output(dest='S').encode('latin-1')
 
 def gerar_excel(df_data, nome, cpf):
@@ -155,7 +195,8 @@ def gerar_excel(df_data, nome, cpf):
 
 st.divider()
 btn_col1, btn_col2 = st.columns(2)
+
 with btn_col1:
-    st.download_button("📘 Baixar Laudo em PDF", gerar_pdf(nome_cliente, cpf_cliente, df, fig), "laudo_patrimonial.pdf", "application/pdf")
+    st.download_button("📘 Baixar Laudo em PDF", gerar_pdf(nome_cliente, cpf_cliente, df, fig, st.session_state.texto_ia), "laudo_patrimonial.pdf", "application/pdf")
 with btn_col2:
-    st.download_button("Excel Planilha de Dados", gerar_excel(df, nome_cliente, cpf_cliente), "dados_patrimoniais.xlsx")
+    st.download_button("📊 Excel Planilha de Dados", gerar_excel(df, nome_cliente, cpf_cliente), "dados_patrimoniais.xlsx")
