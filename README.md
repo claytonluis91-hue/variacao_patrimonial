@@ -28,11 +28,11 @@ O grande diferencial deste projeto é a integração com a Inteligência Artific
 bash
 git clone [https://github.com/SEU_USUARIO/NOME_DO_REPOSITORIO.git](https://github.com/SEU_USUARIO/NOME_DO_REPOSITORIO.git)
 
-Instale as dependências necessárias:
-
+2. Instale as dependências necessárias:
 Bash
 pip install -r requirements.txt
-Configure a sua chave da API do Google Gemini:
+
+3. Configure a sua chave da API do Google Gemini:
 
 Crie uma pasta chamada .streamlit na raiz do projeto.
 
@@ -44,10 +44,11 @@ Ini, TOML
 GEMINI_API_KEY = "SUA_CHAVE_AQUI"
 Atenção: Certifique-se de que a pasta .streamlit/ esteja incluída no seu arquivo .gitignore para não expor sua chave de API publicamente no GitHub!
 
-Execute o aplicativo:
+4. Execute o aplicativo:
 
 Bash
 streamlit run app.py
+
 ☁️ Deploy no Streamlit Cloud
 Para hospedar o projeto gratuitamente no Streamlit Cloud:
 
